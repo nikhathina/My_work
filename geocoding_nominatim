@@ -1,0 +1,48 @@
+from google.colab import drive
+drive.mount('/content/drive') 
+import pandas as pd
+import folium
+import numpy as np
+import webbrowser
+import folium.plugins as plugins
+#import csv
+df = pd.read_csv ('/content/drive/MyDrive/geocoded_addresses.csv')
+#print (df.head())
+
+count_nan = df['location'].isnull().sum()
+print ('Count of NaN: ' + str(count_nan)) #count-nan-values
+nan_values= df[df.isna().any(axis=1)] #select all rows-with-nan-values
+#print (nan_values)
+#df= pd.DataFrame(nan_values, columns= ['ID','ID Code', 'Facility Name', 'addresses'])
+#print (df)
+#df.to_csv('/content/drive/MyDrive/ungeocoded_addresses.csv', index = False)
+nan_value = float("NaN")
+#Convert NaN values to empty string
+
+df.replace("", nan_value, inplace=True)
+
+df.dropna(subset=[], inplace=True)
+df.dropna(subset = ["location", "latitude", "longitude"], inplace=True)
+print (df.head())
+
+#df= ['geocoded_add']
+np.where (df.applymap(lambda x: x == ''))
+
+map1 = folium.Map(location=(40.14, -88.21), tiles='cartodbpositron', zoom_start=12)
+df.apply(lambda row:folium.CircleMarker(location=[row["latitude"], row["longitude"]]).add_to(map1), axis=1)
+
+
+
+#display (map1)
+
+folium_map = folium.Map(location=(40.14, -88.21),
+                        zoom_start=12,
+                        tiles='cartodbpositron')
+
+
+plugins.FastMarkerCluster(data=list(zip(df['latitude'].values, df['longitude'].values))).add_to(folium_map)
+folium.LayerControl().add_to(folium_map)
+folium_map
+#Display the map
+folium_map.save("map.html")
+webbrowser.open("map.html")
